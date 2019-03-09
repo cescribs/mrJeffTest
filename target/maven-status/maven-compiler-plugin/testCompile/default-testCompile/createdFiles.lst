@@ -1,2 +1,3 @@
+com\mrjeff\api\rest\PurchaseOrderControllerApiTest.class
 com\mrjeff\api\rest\PurchaseOrderControllerTest.class
 com\mrjeff\services\CuponServiceTest.class

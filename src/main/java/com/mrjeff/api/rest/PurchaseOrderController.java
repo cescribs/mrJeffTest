@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mrjeff.dtos.PurchaseOrder;
-import com.mrjeff.services.PurchaseOrdersServiceImpl;
+import com.mrjeff.services.PurchaseOrdersService;
 
 /**
  * Created by Cesar on 28/02/2019.
@@ -21,20 +21,20 @@ import com.mrjeff.services.PurchaseOrdersServiceImpl;
 @RequestMapping(value = "/purchaseOrder", produces = APPLICATION_JSON_VALUE)
 public class PurchaseOrderController {
 
-	private PurchaseOrdersServiceImpl purchaseOrdersService;
+	private PurchaseOrdersService purchaseOrdersService;
 
 	private static final Logger log = LoggerFactory.getLogger(PurchaseOrderController.class);
 
 	@PostMapping(value = "/getTotal", produces = APPLICATION_JSON_VALUE)
 	public ResponseEntity<Integer> getTotal(@RequestBody PurchaseOrder purchaseOrder) {
 		log.info(String.format("Getting purchase Order total for number of articles %s and discount code %s",
-				purchaseOrder.getProductsList().size(),purchaseOrder.getCupon()));
+				purchaseOrder.getProductsList().size(), purchaseOrder.getCupon()));
 		return ResponseEntity
-				.ok(purchaseOrdersService.calculateTotal(purchaseOrder.getProductsList(), purchaseOrder.getCupon()));
+				.ok(purchaseOrdersService.calculateTotal(purchaseOrder));
 	}
 
 	@Autowired
-	PurchaseOrderController(PurchaseOrdersServiceImpl purchaseOrdersService) {
+	PurchaseOrderController(PurchaseOrdersService purchaseOrdersService) {
 		this.purchaseOrdersService = purchaseOrdersService;
 	}
 }

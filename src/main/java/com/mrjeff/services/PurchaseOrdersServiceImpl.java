@@ -1,7 +1,6 @@
 package com.mrjeff.services;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mrjeff.dtos.Product;
+import com.mrjeff.dtos.PurchaseOrder;
 import com.mrjeff.repository.CuponRepository;
 import com.mrjeff.repository.Voucher;
 
@@ -21,17 +21,16 @@ public class PurchaseOrdersServiceImpl implements PurchaseOrdersService {
 
 	private static final Logger log = LoggerFactory.getLogger(PurchaseOrdersServiceImpl.class);
 
-	@Autowired
 	private CuponRepository cuponRepository;
 
 	@Override
-	public Integer calculateTotal(List<Product> productList, String voucherCode) {
+	public Integer calculateTotal(PurchaseOrder purchaseOrder) {
 		Integer total = 0;
-		for (Product prod : productList) {
+		for (Product prod : purchaseOrder.getProductsList()) {
 			total = total + prod.getCost();
 		}
-		if (voucherCode != null) {
-			Voucher voucher = cuponRepository.findByCode(voucherCode);
+		if (purchaseOrder.getCupon() != null) {
+			Voucher voucher = cuponRepository.findByCode(purchaseOrder.getCupon());
 			if (voucher != null) {
 				total = total - voucher.getAmount();
 			}
@@ -41,13 +40,17 @@ public class PurchaseOrdersServiceImpl implements PurchaseOrdersService {
 
 	@Override
 	public String addVoucher(String voucherCode, Integer voucherValue) {
-		Voucher result = cuponRepository.findByCode(voucherCode);
-		if (result != null) {
+		Voucher previous = cuponRepository.findByCode(voucherCode);
+		Voucher result;
+		if (previous != null) {
 			log.info(String.format("Updating voucher %s", voucherCode));
-			result.setAmount(voucherValue);
-			return cuponRepository.save(result).getCode();
+			previous.setAmount(voucherValue);
+			result = cuponRepository.save(previous);
+
+		} else {
+			result = cuponRepository.save(new Voucher(voucherCode, voucherValue));
 		}
-		return cuponRepository.save(new Voucher(voucherCode, voucherValue)).getCode();
+		return result.getCode();
 	}
 
 	@Override
@@ -55,6 +58,11 @@ public class PurchaseOrdersServiceImpl implements PurchaseOrdersService {
 		List<String> result = new ArrayList<String>();
 		cuponRepository.findAll().forEach(voucher -> result.add(voucher.getCode()));
 		return result;
+	}
+
+	@Autowired
+	PurchaseOrdersServiceImpl(CuponRepository cuponRepository) {
+		this.cuponRepository = cuponRepository;
 	}
 
 }
